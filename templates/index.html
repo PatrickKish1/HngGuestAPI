@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check IP</title>
+    <script>
+        function redirectToHello() {
+            const visitorName = document.getElementById('visitorName').value;
+            const url = `/api/hello?visitor_name=${encodeURIComponent(visitorName)}`;
+            window.location.href = url;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const visitorName = params.get('visitor_name');
+            if (visitorName) {
+                fetch(`/api/hello?visitor_name=${encodeURIComponent(visitorName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('result').innerText = 'Error: ' + data.error;
+                        } else {
+                            document.getElementById('result').innerHTML = `
+                                <p>"client_ip": "${data.client_ip}"</p>
+                                <p>"location": "${data.location}"</p>
+                                <p>"greeting": "${data.greeting}"</p>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('result').innerText = 'Error: ' + error;
+                    });
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Check Your IP Information</h1>
+    <input type="text" id="visitorName" placeholder="Enter your name" />
+    <button onclick="redirectToHello()">Check IP</button>
+    <div id="result"></div>
+</body>
+</html>
