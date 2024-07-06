@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
@@ -9,10 +9,14 @@ def index():
 
 @app.route('/api/hello', methods=['GET'])
 def hello():
+    visitor_ip = request.args.get('visitor_ip')
     visitor_name = request.args.get('visitor_name', 'Guest')
     
+    if not visitor_ip:
+        return jsonify({"error": "Visitor IP not provided"}), 400
+
     try:
-        ipinfo_response = requests.get('https://ipinfo.io/json')
+        ipinfo_response = requests.get(f'https://ipinfo.io/{visitor_ip}/json')
         ipinfo_response.raise_for_status()
         ipinfo_data = ipinfo_response.json()
         
@@ -38,11 +42,6 @@ def hello():
         })
     except requests.RequestException as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/redirect', methods=['GET'])
-def redirect_to_hello():
-    visitor_name = request.args.get('visitor_name', 'Mark')
-    return redirect(url_for('hello', visitor_name=visitor_name))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
